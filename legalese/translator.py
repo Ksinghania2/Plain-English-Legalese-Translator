@@ -225,7 +225,7 @@ _DEFAULT_SUBJ = "the party"
 # Everything else is a *gloss*: it explains a phrase and is shown as a
 # plain-English bullet rather than spliced into the running text.
 _INLINE_TERMS: dict[str, dict[str, str]] = {
-    "shall": {"affirmative": "must", "negated": "does not have to"},
+    "shall": {"affirmative": "must", "negated": "must not"},
     "covenant": {"affirmative": "promises to", "negated": "does not promise to"},
     "represent_warrant": {"affirmative": "states and promises", "negated": "does not state"},
     "commercially_reasonable": {
@@ -289,9 +289,8 @@ def _inline_replacement(entry: JargonEntry, ctx: ClauseContext, surface: str) ->
 def _extend_negated_modal(text: str, start: int, end: int) -> int:
     """Extend a negated modal span to swallow the trailing "not".
 
-    "shall not assign" should become "does not have to assign", not
-    "does not have to not assign". So the "not" is pulled into the
-    replaced span.
+    "shall not assign" should become "must not assign", not
+    "must not not assign". So the "not" is pulled into the replaced span.
     """
     tail = text[end : end + 6]
     m = re.match(r"\s+not\b", tail, re.I)

@@ -10,7 +10,8 @@ def test_smoke_translate():
     )
     r = translate(text)
     assert r.stats.jargon_hits >= 5
-    assert "does not have to not" not in r.rewritten
+    assert "must not assign" in r.rewritten
+    assert "does not have to assign" not in r.rewritten
     assert "promises to must" not in r.rewritten
     assert r.stats.reading_level_before >= r.stats.reading_level_after or True
 
