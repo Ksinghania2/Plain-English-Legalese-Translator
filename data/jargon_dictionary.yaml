@@ -1,0 +1,1240 @@
+# ================================================================
+#  SEMANTIC JARGON DICTIONARY
+#  The knowledge base behind the Contextual Replacer.
+#
+#  Each entry maps a piece of legalese to plain English. The engine
+#  matches `term` + `variants` in running text (longest match wins),
+#  then uses clause context (subject, object, negation, voice,
+#  conditions, domain) to pick the right sense and fill the `plain`
+#  rewrite template.
+#
+#  Template placeholders understood by the replacer:
+#    {SUBJ}  -> extracted subject of the clause (or "the party")
+#    {OBJ}   -> extracted object / indirect object
+#    {TRIG}  -> the condition ("if ...", "provided that ...")
+#    {TERM}  -> this entry's plain gloss (short)
+#
+#  Fields:
+#    id          unique slug
+#    term        canonical phrase
+#    category    key from `categories` below
+#    domains     [general, saas, finance, healthcare, realestate]
+#    variants    alternative surface forms to match
+#    risk        low | medium | high | critical
+#    short       one-line gloss (tooltip headline)
+#    definition  plain-English explanation (tooltip body)
+#    plain       affirmative rewrite template
+#    meaning     "what this means for you" (so-what line)
+#    case_sensitive  optional; match must preserve case (e.g. "Term")
+#    senses      optional context-specific overrides; each has
+#                `when` (negation/passive/subject/object/contains/
+#                not_contains) and replacement fields
+# ================================================================
+
+version: "1.0"
+
+domains:
+  general: "General contractual legalese"
+  saas: "SaaS / tech terms of service"
+  finance: "Loans, investments, banking"
+  healthcare: "HIPAA, clinical, insurance"
+  realestate: "Leases, deeds, property"
+
+categories:
+  definitions:
+    label: "Archaisms & Defined Terms"
+    color: "#8b5cf6"
+    description: "Old-fashioned connective tissue that makes simple sentences look complicated."
+  condition:
+    label: "Conditions & Carve-outs"
+    color: "#06b6d4"
+    description: "Triggers, exceptions, and clauses that quietly limit the rule."
+  obligation:
+    label: "Duties & Promises"
+    color: "#f59e0b"
+    description: "Words that make you promise to do (or not do) something."
+  liability:
+    label: "Liability & Indemnity"
+    color: "#ef4444"
+    description: "Who pays when things go wrong — and how much."
+  dispute:
+    label: "Disputes & Law"
+    color: "#ec4899"
+    description: "Where, how, and whether you can fight back."
+  termination:
+    label: "Termination & Term"
+    color: "#10b981"
+    description: "How long you're locked in and how you get out."
+  payment:
+    label: "Money & Fees"
+    color: "#eab308"
+    description: "Charges, refunds, and the fine print about paying."
+  privacy:
+    label: "Privacy & Data"
+    color: "#3b82f6"
+    description: "What they collect, share, and do with your information."
+  finance:
+    label: "Finance Specifics"
+    color: "#f97316"
+    description: "Loan, investment, and banking machinery."
+  healthcare:
+    label: "Healthcare Specifics"
+    color: "#14b8a6"
+    description: "HIPAA, clinical trials, and medical bureaucracy."
+  realestate:
+    label: "Real Estate Specifics"
+    color: "#a855f7"
+    description: "Property, leases, and deeds."
+
+entries:
+
+  # ---------------- Archaisms & Defined Terms ----------------
+  - id: whereas
+    term: "whereas"
+    category: definitions
+    domains: [general, saas, finance, healthcare, realestate]
+    risk: low
+    short: "background / purpose filler"
+    definition: >-
+      "Whereas" opens the recitals — the part of a contract that explains why
+      the parties are signing. It sets the scene and rarely creates a duty by
+      itself.
+    plain: "This section just gives the background and purpose of the agreement."
+    meaning: "Usually safe to skim. The binding rules come after the recitals."
+
+  - id: hereinafter
+    term: "hereinafter"
+    category: definitions
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["herein after"]
+    risk: low
+    short: "\"from here on called...\""
+    definition: >-
+      Introduces a nickname for a party or thing that the rest of the document
+      will use. Example: "Acme Corp (hereinafter 'the Company')."
+    plain: "From this point on, the document will call this {OBJ}."
+    meaning: "It's just naming. Nothing risky on its own."
+  - id: hereby
+    term: "hereby"
+    category: definitions
+    domains: [general, saas, finance, healthcare, realestate]
+    risk: low
+    short: "\"by this document\""
+    definition: >-
+      Means the action happens automatically through the signing of this
+      document — no separate step needed. "You hereby assign..." assigns
+      rights the moment you sign.
+    plain: "By signing this document, {SUBJ} immediately completes this action."
+    meaning: "Whatever follows 'hereby' takes effect instantly upon signing."
+
+  - id: herein
+    term: "herein"
+    category: definitions
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["hereof", "hereunder", "hereinabove", "hereinbelow"]
+    risk: low
+    short: "\"in this document\""
+    definition: >-
+      Refers to something located somewhere else in the same document.
+      "Obligations herein" means the obligations written in this document.
+    plain: "in this document"
+    meaning: "Just a pointer back to this document — no hidden meaning."
+
+  - id: therein
+    term: "thereof"
+    category: definitions
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["therein", "thereto", "thereunder", "thereby"]
+    risk: low
+    short: "\"of that thing mentioned\""
+    definition: >-
+      Refers back to something just mentioned. "Payment thereof" means
+      "payment of that thing we just talked about."
+    plain: "of the thing just mentioned"
+    meaning: "A backwards pointer. The real substance is where it was defined."
+
+  - id: thereafter
+    term: "thereafter"
+    category: definitions
+    domains: [general, saas, finance, healthcare, realestate]
+    risk: low
+    short: "\"after that\""
+    definition: >-
+      Simply means "after that point in time." "The fee is due; thereafter no
+      refunds apply" means refunds stop after that point.
+    plain: "after that"
+    meaning: "A time reference. Check what event it's anchored to."
+
+  - id: aforesaid
+    term: "aforesaid"
+    category: definitions
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["aforementioned", "aforestated"]
+    risk: low
+    short: "\"the thing mentioned earlier\""
+    definition: >-
+      An old-fashioned way of saying "the thing I already told you about
+      earlier in this document."
+    plain: "the part mentioned earlier in this document"
+    meaning: "Purely a reference; look backwards in the doc for the real meaning."
+
+  # ---------------- Duties & Promises ----------------
+  - id: shall
+    term: "shall"
+    category: obligation
+    domains: [general, saas, finance, healthcare, realestate]
+    risk: medium
+    short: "must (a hard legal duty)"
+    definition: >-
+      In legal drafting, "shall" creates a binding obligation. "Tenant shall
+      pay" means the tenant is legally required to pay — it's not a wish.
+    plain: "{SUBJ} must {ACTION}."
+    meaning: "This is a real, enforceable duty — not a suggestion."
+    senses:
+      - when: { negation: true }
+        short: "is not required to"
+        plain: "{SUBJ} does not have to {ACTION}."
+        meaning: "This removes the duty — it's permission, not a requirement."
+
+  - id: covenant
+    term: "covenant"
+    category: obligation
+    domains: [general, finance, saas, realestate]
+    variants: ["covenants", "covenanted", "agree to", "agrees to", "agreed to", "undertake", "undertakes"]
+    risk: medium
+    short: "formal promise to do something"
+    definition: >-
+      A "covenant" is a formal promise written into a contract. "The Borrower
+      covenants to maintain insurance" means the borrower promises to keep
+      insurance in place.
+    plain: "{SUBJ} promises to {ACTION}."
+    meaning: "It's a promise the other side can enforce in court."
+
+  - id: represent_warrant
+    term: "represent and warrant"
+    category: obligation
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["represents and warrants", "representations and warranties", "representation and warranty", "warrants", "warrant", "hereby represents"]
+    risk: high
+    short: "swear something is true"
+    definition: >-
+      To "represent and warrant" means you formally state something is true
+      AND promise it will stay true. If it turns out to be false, you owe
+      damages even if nobody relied on it.
+    plain: "{SUBJ} states and promises that: {CLAUSE}."
+    meaning: "If any statement proves false, you can be liable — double-check every one."
+
+  - id: commercially_reasonable
+    term: "commercially reasonable efforts"
+    category: obligation
+    domains: [general, saas, finance]
+    variants: ["commercially reasonable", "reasonable efforts"]
+    risk: medium
+    short: "try hard-ish, but no guarantee"
+    definition: >-
+      A promise to make efforts that a sensible business would make in the
+      same situation. It is NOT a promise to actually achieve the result.
+    plain: "{SUBJ} will try in a way a reasonable business would, but does not guarantee the result."
+    meaning: "Outcome isn't guaranteed — only that a decent-faith effort was made."
+
+  - id: sole_discretion
+    term: "sole discretion"
+    category: obligation
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["its sole discretion", "their sole discretion", "sole and absolute discretion"]
+    risk: high
+    short: "they decide alone, no reasons needed"
+    definition: >-
+      When a party may act "in its sole discretion," they get to decide
+      essentially whatever they want, and you usually can't challenge the
+      decision as unfair.
+    plain: "{SUBJ} can decide this however they want, without needing a reason."
+    meaning: "A one-sided power — expect no appeal if the decision goes against you."
+  # ---------------- Liability & Indemnity ----------------
+  - id: indemnify
+    term: "indemnify"
+    category: liability
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["indemnification", "indemnified", "indemnifying", "indemnitor", "indemnitee"]
+    risk: high
+    short: "cover the other side's losses"
+    definition: >-
+      To indemnify someone means you agree to pay for the losses, damages, and
+      legal costs they suffer because of something you did (or failed to do).
+      "You indemnify us" puts the company's legal risk on you.
+    plain: "{SUBJ} must pay for {OBJ}'s losses, damages, and legal costs caused by {SUBJ}."
+    meaning: "You could be forced to cover the other side's legal bills and damages."
+    senses:
+      - when: { passive: true }
+        short: "the other side will cover your losses"
+        plain: "{SUBJ} will be protected — the other party pays the losses for them."
+        meaning: "Passive 'shall be indemnified' means protection flows TO that party."
+
+  - id: hold_harmless
+    term: "hold harmless"
+    category: liability
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["hold him harmless", "holds harmless", "holding harmless"]
+    risk: high
+    short: "promise not to sue over these losses"
+    definition: >-
+      A promise not to hold the other party responsible — legally, "hold X
+      harmless" means you won't sue X for the harm described, even if X caused it.
+    plain: "{SUBJ} promises not to blame or sue {OBJ} for the losses listed here."
+    meaning: "You give up the right to sue over these specific losses."
+
+  - id: limitation_of_liability
+    term: "limitation of liability"
+    category: liability
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["limit our liability", "limits of liability", "aggregate liability", "total liability"]
+    risk: high
+    short: "caps how much they can be made to pay"
+    definition: >-
+      A clause that puts a ceiling on the damages one or both parties can be
+      forced to pay. Often capped at fees paid in the last 12 months, and often
+      excludes "consequential" damages entirely.
+    plain: "If something goes wrong, the most {OBJ} can be made to pay is capped (often at fees recently paid)."
+    meaning: "Even if you win big, your recovery may be capped at a small amount."
+
+  - id: consequential_damages
+    term: "consequential damages"
+    category: liability
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["consequential, incidental, or special damages", "incidental damages", "special damages", "indirect damages", "punitive damages"]
+    risk: high
+    short: "indirect losses — usually excluded"
+    definition: >-
+      Losses that don't flow directly from the breach but happen as a
+      consequence: lost profits, downtime costs, data loss, reputational harm.
+      Contracts frequently exclude them from any recovery.
+    plain: "Lost profits, downtime, and other knock-on losses are excluded here."
+    meaning: "The big downstream losses you'd actually care about may not be recoverable."
+
+  - id: liquidated_damages
+    term: "liquidated damages"
+    category: liability
+    domains: [general, finance, realestate]
+    variants: ["liquidated damage", "liquidated sum"]
+    risk: high
+    short: "pre-agreed penalty amount"
+    definition: >-
+      A fixed dollar amount the parties agree in advance you'll pay if a
+      specific thing goes wrong (like missing a deadline), regardless of the
+      actual harm caused.
+    plain: "If this happens, {SUBJ} pays a pre-agreed fixed amount of {MONEY}, even if the real damage is smaller."
+    meaning: "A pre-set penalty you can't argue down after the fact."
+
+  - id: waiver
+    term: "waive"
+    category: liability
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["waives", "waived", "waiving", "waiver", "waivers", "waive rights"]
+    risk: medium
+    short: "give up a right on purpose"
+    definition: >-
+      To voluntarily give up a right you'd otherwise have. "You waive the right
+      to a jury trial" means you agree right now not to demand one later.
+    plain: "{SUBJ} gives up the right to {ACTION}."
+    meaning: "You're signing away a right — make sure you mean it."
+    senses:
+      - when: { negation: true }
+        short: "does not give up this right"
+        plain: "{SUBJ} keeps the right to {ACTION}."
+        meaning: "The right is preserved, not given up."
+
+  - id: release
+    term: "release"
+    category: liability
+    domains: [general, finance, healthcare, realestate]
+    variants: ["releases", "released", "releasing", "release of claims", "full release"]
+    risk: high
+    short: "drop all claims you have"
+    definition: >-
+      A formal giving-up of claims you may have against someone, usually past
+      and sometimes future. Common in settlements and lease-end agreements.
+    plain: "{SUBJ} drops all claims they have against {OBJ}."
+    meaning: "Once signed, you generally can't sue over these claims later."
+  # ---------------- Disputes & Law ----------------
+  - id: binding_arbitration
+    term: "binding arbitration"
+    category: dispute
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["binding arbitration", "arbitration", "arbitrator", "arbitral", "final and binding"]
+    risk: high
+    short: "private judge, no appeal"
+    definition: >-
+      Instead of going to court, disputes are decided by a private arbitrator
+      whose decision is "binding" — you can't appeal it even if it's wrong on
+      the law. Discovery is limited and costs are usually shared.
+    plain: "Disputes go to a private arbitrator instead of court, and their decision is final — no appeal."
+    meaning: "You give up the court system, a jury, and most appeal rights."
+    senses:
+      - when: { negation: true }
+        short: "no forced arbitration"
+        plain: "Disputes are NOT forced into private arbitration here."
+        meaning: "Court access may be preserved — read closely."
+
+  - id: class_action_waiver
+    term: "class action waiver"
+    category: dispute
+    domains: [general, saas, finance]
+    variants: ["class action", "class proceedings", "collective action", "representative action"]
+    risk: high
+    short: "you can only sue one-on-one"
+    definition: >-
+      You agree never to join or bring a class-action lawsuit over this
+      contract. Every claim must be brought individually, which makes small
+      claims economically impossible to pursue.
+    plain: "{SUBJ} cannot join a group lawsuit — each claim must be brought alone."
+    meaning: "Small-value claims become impractical to bring individually."
+
+  - id: jury_trial_waiver
+    term: "jury trial waiver"
+    category: dispute
+    domains: [general, saas, finance, realestate]
+    variants: ["jury trial", "trial by jury", "waive jury"]
+    risk: high
+    short: "no jury — a judge decides"
+    definition: >-
+      You give up the constitutional right to have a jury decide your case.
+      Instead, a judge (or arbitrator) makes the call alone.
+    plain: "{SUBJ} gives up the right to a jury trial; a judge decides instead."
+    meaning: "Juries often favor individuals; judges tend to follow technical law."
+
+  - id: governing_law
+    term: "governing law"
+    category: dispute
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["governed by the laws", "applicable law", "choice of law"]
+    risk: medium
+    short: "which state's law applies"
+    definition: >-
+      Picks whose laws interpret the contract. Companies usually choose their
+      home state — which may have laws favorable to them and be far from you.
+    plain: "The laws of {JURISDICTION} will be used to interpret this agreement."
+    meaning: "You may have to argue under another state's laws — possibly far from home."
+
+  - id: venue
+    term: "venue"
+    category: dispute
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["exclusive jurisdiction", "exclusive venue", "consent to jurisdiction", "forum"]
+    risk: medium
+    short: "where you must show up to fight"
+    definition: >-
+      The specific court location where disputes must be filed. "Exclusive
+      venue" means you can't bring the case anywhere else.
+    plain: "Any lawsuit must be filed in {JURISDICTION} — nowhere else."
+    meaning: "You may have to travel (and hire local counsel) to defend yourself."
+
+  - id: force_majeure
+    term: "force majeure"
+    category: dispute
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["act of god", "events beyond its reasonable control"]
+    risk: medium
+    short: "\"excusable chaos\" clause"
+    definition: >-
+      Frees a party from liability when extraordinary events outside their
+      control (natural disasters, war, pandemics, sometimes labor strikes)
+      prevent them from performing.
+    plain: "Neither side is at fault if events outside their control (war, disaster, pandemic) prevent performance."
+    meaning: "Check the list — some clauses include broad events like supply shortages."
+  # ---------------- Conditions & Carve-outs ----------------
+  - id: notwithstanding
+    term: "notwithstanding"
+    category: condition
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["notwithstanding anything to the contrary", "notwithstanding the foregoing"]
+    risk: medium
+    short: "\"ignore the earlier rule, this one wins\""
+    definition: >-
+      "Notwithstanding" means "even though" or "despite" — it carves out an
+      exception that overrides whatever was said before. It's a trump card.
+    plain: "Even if the earlier rule says otherwise, this rule takes priority."
+    meaning: "Something you read earlier just got overridden — find the earlier rule and compare."
+
+  - id: provided_that
+    term: "provided that"
+    category: condition
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["provided however that", "provided, however", "on condition that"]
+    risk: medium
+    short: "but only if..."
+    definition: >-
+      Introduces a condition that limits or reverses the rule just stated.
+      The clause after "provided that" is usually the part that matters most.
+    plain: "This is only true if: {TRIG}"
+    meaning: "The rule before this only applies when the condition after it is met."
+
+  - id: in_event_that
+    term: "in the event that"
+    category: condition
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["in the event of", "in the event", "should it occur", "in case of"]
+    risk: low
+    short: "\"if\" in a tuxedo"
+    definition: >-
+      A needlessly formal way of saying "if." "In the event of non-payment"
+      simply means "if you don't pay."
+    plain: "if {TRIG}"
+    meaning: "It's just 'if' — nothing more."
+
+  - id: subject_to
+    term: "subject to"
+    category: condition
+    domains: [general, saas, finance, healthcare, realestate]
+    risk: medium
+    short: "\"as limited by...\""
+    definition: >-
+      Means the right or rule that follows is controlled or limited by
+      something else (often another section of the same document).
+    plain: "{SUBJ}'s rights here are limited by whatever else this document says."
+    meaning: "There's a catch elsewhere in the document — go find it."
+
+  - id: except_that
+    term: "except that"
+    category: condition
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["except as", "except when", "unless", "save that", "save for"]
+    risk: low
+    short: "\"but not in this situation\""
+    definition: >-
+      Carves out an exception to the rule just stated. The words after
+      "except" tell you when the rule does NOT apply.
+    plain: "The rule above does NOT apply when: {TRIG}"
+    meaning: "The exception can swallow the rule — read what follows it carefully."
+
+  - id: without_prejudice
+    term: "without prejudice"
+    category: condition
+    domains: [general, finance, healthcare, realestate]
+    risk: medium
+    short: "\"this doesn't count against me later\""
+    definition: >-
+      When a statement or action is "without prejudice," it can't be used
+      against you in a later legal proceeding. Also common in settlement talks.
+    plain: "This can't be used against {SUBJ} later in court."
+    meaning: "It protects the party making the statement — a negotiation shield."
+
+  - id: time_is_of_essence
+    term: "time is of the essence"
+    category: condition
+    domains: [general, finance, realestate]
+    variants: ["time of the essence"]
+    risk: high
+    short: "deadlines are strict — no excuses"
+    definition: >-
+      Makes every deadline in the contract strictly enforceable. Being a few
+      days late can count as a full breach, not just a minor slip.
+    plain: "Deadlines in this contract are strict — being late counts as breaking the deal."
+    meaning: "Even small delays can trigger penalties or termination."
+  # ---------------- Termination & Term ----------------
+  - id: term
+    term: "Term"
+    category: termination
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["Initial Term", "Renewal Term"]
+    case_sensitive: true
+    risk: low
+    short: "how long the contract lasts"
+    definition: >-
+      "Term" is legalese for the duration of the contract — when it starts,
+      when it ends, and whether it renews. Defined terms like "Initial Term"
+      are usually capitalized on purpose.
+    plain: "This is about how long the contract lasts."
+    meaning: "Check the dates — this controls your lock-in period."
+
+  - id: termination_for_convenience
+    term: "termination for convenience"
+    category: termination
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["terminate for convenience", "terminate at any time", "termination for any reason", "without cause"]
+    risk: high
+    short: "either side can walk away (on notice)"
+    definition: >-
+      Lets one or both parties end the contract without a reason, usually
+      after giving written notice (30, 60, or 90 days). Often one-sided —
+      check WHO has this right.
+    plain: "{SUBJ} can end this deal for no reason at all, after giving notice."
+    meaning: "If only the company has this right, your access can be cut off anytime."
+
+  - id: cure_period
+    term: "cure period"
+    category: termination
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["cure", "right to cure", "notice and opportunity to cure", "opportunity to cure"]
+    risk: medium
+    short: "grace period to fix a violation"
+    definition: >-
+      After a breach, the other side must usually give written notice and
+      wait (e.g., 30 days) before terminating — that waiting window is the
+      cure period, during which you can fix the problem.
+    plain: "If {SUBJ} breaks the rules, they get {DURATION} to fix it before the deal can end."
+    meaning: "You usually get a warning window — but only for non-emergency breaches."
+
+  - id: survival
+    term: "survival"
+    category: termination
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["shall survive", "survives termination", "survive expiration"]
+    risk: medium
+    short: "obligations that outlive the contract"
+    definition: >-
+      Lists which clauses keep running after the contract ends — typically
+      confidentiality, indemnity, and liability limits. Those duties "survive"
+      termination.
+    plain: "Even after this contract ends, these parts ({CLAUSE}) still apply."
+    meaning: "Ending the deal doesn't end everything — some duties follow you."
+
+  - id: automatic_renewal
+    term: "automatic renewal"
+    category: termination
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["automatically renew", "auto-renew", "auto renewal", "automatically extended", "evergreen"]
+    risk: high
+    short: "it renews unless you act"
+    definition: >-
+      The contract quietly extends itself for another period unless you
+      cancel within a specific window. Miss the window, and you're locked in
+      for another full term.
+    plain: "This contract renews itself automatically unless {SUBJ} cancels in time."
+    meaning: "Calendar the cancellation window — otherwise you're renewed for another cycle."
+
+  - id: suspension
+    term: "suspend"
+    category: termination
+    domains: [general, saas, finance, healthcare]
+    variants: ["suspension", "suspended", "suspend services", "disable access"]
+    risk: medium
+    short: "they can cut you off temporarily"
+    definition: >-
+      Allows the provider to pause service or access — often immediately and
+      without notice — for things like non-payment or suspected violations.
+    plain: "{OBJ} can pause services or access, sometimes immediately and without warning."
+    meaning: "Access can be switched off fast; know the triggers."
+
+  - id: assignment
+    term: "assignment"
+    category: termination
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["assign", "assigned", "assigns", "successors and assigns", "transfer of this agreement"]
+    risk: medium
+    short: "who the contract can be handed to"
+    definition: >-
+      Whether (and to whom) a party can transfer the contract. Many agreements
+      ban you from assigning it but let the company assign it freely — often
+      in a merger or sale.
+    plain: "{SUBJ} may hand this contract to another company (often after a merger or sale)."
+    meaning: "You could end up bound to a company you never chose to do business with."
+  - id: confidentiality
+    term: "confidential information"
+    category: obligation
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["confidentiality", "non-disclosure", "proprietary information", "trade secret", "keep confidential"]
+    risk: medium
+    short: "secrets you must protect (and often can't use)"
+    definition: >-
+      Defines what counts as secret, what you must do to protect it, how long
+      the duty lasts, and — importantly — what you're allowed to keep after
+      the relationship ends.
+    plain: "{SUBJ} must protect {OBJ}'s secrets and generally can't share or use them."
+    meaning: "Breach can trigger big damages; check how long the secrecy duty lasts."
+
+  - id: ip_assignment
+    term: "right, title and interest"
+    category: obligation
+    domains: [general, saas]
+    variants: ["assigns all right", "intellectual property", "work product", "work made for hire", "proprietary rights"]
+    risk: high
+    short: "they own what you create"
+    definition: >-
+      A clause assigning "all right, title and interest" in work product means
+      the company owns everything you create under the agreement — including
+      improvements you'd think were yours.
+    plain: "{OBJ} owns everything {SUBJ} creates under this agreement."
+    meaning: "You may lose ownership of tools, code, or content you build."
+    senses:
+      - when: { negation: true }
+        short: "you keep your ownership"
+        plain: "{SUBJ} keeps ownership of what they created."
+        meaning: "Ownership is not being taken away here."
+
+  - id: non_solicit
+    term: "non-solicitation"
+    category: obligation
+    domains: [general, saas, finance]
+    variants: ["non-solicit", "non compete", "non-competition", "noncompete", "restrictive covenant"]
+    risk: high
+    short: "can't hire their people / compete"
+    definition: >-
+      Bans you, for a period of time and within a region, from hiring the
+      other side's staff or (in non-competes) from working in a competing
+      business. Enforceability varies wildly by state.
+    plain: "{SUBJ} cannot hire {OBJ}'s staff (or compete with them) for a while after this ends."
+    meaning: "Could limit your future jobs or business — check the scope and duration."
+
+  - id: audit_right
+    term: "audit right"
+    category: obligation
+    domains: [general, saas, finance, healthcare]
+    variants: ["right to audit", "audit rights", "inspect and audit"]
+    risk: medium
+    short: "they can check your records"
+    definition: >-
+      Lets the other party (or a third-party auditor) inspect your books,
+      systems, or facilities — sometimes with little notice and at your cost
+      if they find a discrepancy.
+    plain: "{OBJ} can inspect {SUBJ}'s records, sometimes with little notice."
+    meaning: "Budget for audit costs and prepare for outside scrutiny."
+
+  # ---------------- Money & Fees ----------------
+  - id: non_refundable
+    term: "non-refundable"
+    category: payment
+    domains: [general, saas, finance, healthcare, realestate]
+    variants: ["nonrefundable", "no refunds", "non-refund", "all fees paid are non-refundable"]
+    risk: high
+    short: "your money is gone"
+    definition: >-
+      Once paid, these fees won't be returned — even if you cancel, they
+      breach, or the service is never delivered (unless another law overrides).
+    plain: "Money already paid cannot be gotten back."
+    meaning: "Treat these payments as final — even if the deal sours."
+
+  - id: prorated
+    term: "prorated"
+    category: payment
+    domains: [general, saas, finance, realestate]
+    variants: ["pro rata", "proration", "prorate"]
+    risk: low
+    short: "scaled to the exact time used"
+    definition: >-
+      A charge or credit adjusted to cover only part of a period — e.g., half
+      a month of service instead of a full month.
+    plain: "You're only charged for the exact portion of time you actually used."
+    meaning: "Usually fairer; just confirm whether proration cuts for or against you."
+
+  - id: consideration
+    term: "consideration"
+    category: payment
+    domains: [general, finance, healthcare, realestate]
+    risk: medium
+    short: "the value exchanged (the price of the promise)"
+    definition: >-
+      In law, "consideration" is what each side gives up to make the contract
+      binding — money, services, a promise. Without it, a promise generally
+      isn't enforceable.
+    plain: "This is what each side is giving up to make the deal legally binding."
+    meaning: "If consideration disappears (e.g., $1 nominal), enforceability questions can arise."
+
+  - id: late_fees
+    term: "late fee"
+    category: payment
+    domains: [general, finance, saas, realestate]
+    variants: ["late charges", "interest on overdue", "delinquency fee", "default interest"]
+    risk: medium
+    short: "penalty for paying late"
+    definition: >-
+      Extra money owed when a payment misses its deadline — sometimes a flat
+      fee, sometimes compounding interest at a high rate.
+    plain: "If payment is late, {SUBJ} owes extra money ({MONEY} or interest)."
+    meaning: "Watch the rate — penalty interest can snowball quickly."
+  # ---------------- Privacy & Data ----------------
+  - id: pii
+    term: "personally identifiable information"
+    category: privacy
+    domains: [general, saas, healthcare]
+    variants: ["personally identifiable", "personal information", "personal data", "pii", "your information"]
+    risk: high
+    short: "data that identifies you"
+    definition: >-
+      Any information that can single you out — name, email, address, phone,
+      SSN, device IDs, location. When a policy says it "may collect personal
+      information," it's talking about this.
+    plain: "Information that identifies you personally (name, email, location, IDs...)."
+    meaning: "The more categories listed here, the more of you is being collected."
+
+  - id: data_controller
+    term: "data controller"
+    category: privacy
+    domains: [general, saas, healthcare]
+    variants: ["data processor", "controller", "processor", "service provider acting as"]
+    risk: medium
+    short: "who decides how your data is used"
+    definition: >-
+      The "controller" decides why and how personal data is processed; a
+      "processor" only acts on the controller's instructions. Your rights
+      usually run against the controller.
+    plain: "The company named here decides how your data is used; others just follow their instructions."
+    meaning: "Direct privacy requests (deletion, access) go to the controller."
+
+  - id: data_processing
+    term: "processing"
+    category: privacy
+    domains: [general, saas, healthcare]
+    variants: ["processes", "processed", "processing of personal data", "use of your data", "collect, use, and disclose"]
+    risk: medium
+    short: "anything done with your data"
+    definition: >-
+      Under privacy law, "processing" covers everything: collecting, storing,
+      reading, sharing, deleting. A broad processing clause is broad permission.
+    plain: "This covers everything the company does with your data — collecting, storing, sharing, deleting."
+    meaning: "A broad 'processing' grant is broad permission — look for limits."
+
+  - id: consent
+    term: "consent"
+    category: privacy
+    domains: [general, saas, healthcare]
+    variants: ["you consent", "your consent", "by using the service you consent", "implied consent"]
+    risk: high
+    short: "you agree just by using it"
+    definition: >-
+      Permission for data use. Watch for "by using the service you consent" —
+      that's implied consent obtained without a checkbox, and it can be hard
+      to withdraw later.
+    plain: "{SUBJ} agrees to this just by using the service — no separate checkbox needed."
+    meaning: "Implied consent is easy to give and hard to take back."
+    senses:
+      - when: { negation: true }
+        short: "no consent given here"
+        plain: "{SUBJ} does NOT agree to this."
+        meaning: "Consent is being withheld — the company may lack permission."
+
+  - id: right_to_erasure
+    term: "right to erasure"
+    category: privacy
+    domains: [general, saas, healthcare]
+    variants: ["right to be forgotten", "delete your data", "deletion request", "erasure"]
+    risk: low
+    short: "you can ask them to delete you"
+    definition: >-
+      Under laws like GDPR and CCPA, you can ask a company to delete your
+      personal data, with exceptions (legal retention duties, completed
+      transactions).
+    plain: "You can ask the company to delete your personal data, with some legal exceptions."
+    meaning: "A real right you can exercise — but backups and legal holds may survive."
+
+  - id: third_party_sharing
+    term: "third parties"
+    category: privacy
+    domains: [general, saas, healthcare]
+    variants: ["third party", "third-party", "sell your data", "share with partners", "affiliates", "service providers"]
+    risk: high
+    short: "your data leaves the building"
+    definition: >-
+      Your information may be shared with (or sold to) affiliates, ad
+      partners, and vendors. "We may share with trusted partners" is broad
+      permission to pass your data around.
+    plain: "Your information may be shared with (or sold to) other companies."
+    meaning: "The more vague the partner list, the wider the possible spread of your data."
+
+  - id: tracking_technologies
+    term: "tracking technologies"
+    category: privacy
+    domains: [general, saas]
+    variants: ["cookies", "web beacons", "pixel tags", "similar technologies", "device identifiers"]
+    risk: low
+    short: "cookies and pixels that follow you"
+    definition: >-
+      Cookies, pixels, and device fingerprints used to remember you and track
+      your behavior across sites, often for advertising.
+    plain: "Cookies and trackers follow your activity, often across other sites too."
+    meaning: "Essential for ads; you can often opt out — buried in settings."
+
+  - id: aggregate_data
+    term: "aggregate data"
+    category: privacy
+    domains: [general, saas]
+    variants: ["aggregated data", "de-identified", "anonymized", "non-personally identifiable", "statistical information"]
+    risk: low
+    short: "your data, stripped of your name"
+    definition: >-
+      Data combined with others' so it can't identify individuals. Companies
+      keep full freedom over aggregated data — it's outside privacy laws.
+    plain: "Once data is blended with everyone's and can't identify you, the company can use it freely."
+    meaning: "'De-identified' isn't always truly anonymous — re-identification is sometimes possible."
+  # ---------------- Finance Specifics ----------------
+  - id: fiduciary_duty
+    term: "fiduciary duty"
+    category: finance
+    domains: [finance]
+    variants: ["fiduciary", "fiduciary responsibilities", "highest standard of care"]
+    risk: high
+    short: "they must put you first"
+    definition: >-
+      The strongest duty in law: the advisor must act in your best interest,
+      not theirs, disclose conflicts, and avoid misleading you. Many financial
+      products are sold under a LOWER "suitability" standard instead.
+    plain: "{SUBJ} is legally required to put your interests first — not their own."
+    meaning: "Confirm they actually owe this duty; many brokers legally don't."
+
+  - id: due_diligence
+    term: "due diligence"
+    category: finance
+    domains: [finance]
+    variants: ["diligence", "satisfactory due diligence", "conduct its own due diligence"]
+    risk: medium
+    short: "do your homework before closing"
+    definition: >-
+      The investigation a buyer or investor does before committing — reviewing
+      financials, contracts, and risks. Contracts often make it YOUR risk to
+      investigate.
+    plain: "{SUBJ} must investigate and verify things for themselves before committing."
+    meaning: "'Let the buyer beware' — you can't rely on the seller's claims alone."
+
+  - id: material_adverse_change
+    term: "material adverse change"
+    category: finance
+    domains: [finance, saas]
+    variants: ["material adverse effect", "mac clause", "material adverse change", "materially adverse"]
+    risk: high
+    short: "big bad change = escape hatch"
+    definition: >-
+      A clause letting a party walk away (or renegotiate) if a truly big
+      negative change hits the business. "Material" is deliberately vague and
+      heavily litigated.
+    plain: "If a big negative change happens to the business, {SUBJ} can back out or renegotiate."
+    meaning: "The vagueness of 'material' is where deals get fought over."
+
+  - id: cross_default
+    term: "cross-default"
+    category: finance
+    domains: [finance]
+    variants: ["cross default", "event of default", "default under", "becomes an event of default"]
+    risk: high
+    short: "one failure trips all the others"
+    definition: >-
+      Failing one agreement can automatically count as a default under your
+      other agreements too — like dominoes falling across your whole credit
+      stack.
+    plain: "Breaking one deal can instantly count as breaking your other deals too."
+    meaning: "A single slip can cascade across all your loans and credit lines."
+
+  - id: acceleration_clause
+    term: "acceleration clause"
+    category: finance
+    domains: [finance, realestate]
+    variants: ["accelerate", "accelerated", "immediately due and payable", "call the loan"]
+    risk: high
+    short: "whole balance due immediately"
+    definition: >-
+      On default, the lender can demand the ENTIRE remaining balance at once
+      instead of waiting for scheduled payments.
+    plain: "If {SUBJ} defaults, the full remaining balance becomes due immediately."
+    meaning: "You owe everything now, not monthly — the fastest path to foreclosure."
+  - id: margin_call
+    term: "margin call"
+    category: finance
+    domains: [finance]
+    variants: ["margin call", "maintenance margin", "margin requirement", "make good the deficit"]
+    risk: high
+    short: "add money now or we sell your assets"
+    definition: >-
+      When borrowed investments drop in value, the broker demands cash (or
+      asset sales) immediately to cover the shortfall — often with no
+      discretion on timing.
+    plain: "If the value drops, {SUBJ} must add money fast or the broker sells their assets."
+    meaning: "Forced sales at the worst possible time are how real losses happen."
+
+  - id: accredited_investor
+    term: "accredited investor"
+    category: finance
+    domains: [finance]
+    variants: ["accredited", "qualified purchaser", "eligible investor", "sophisticated investor"]
+    risk: medium
+    short: "permission slip for risky deals"
+    definition: >-
+      A status (based on income, net worth, or experience) that lets you buy
+      investments that aren't registered with the SEC — which usually means
+      fewer protections and higher risk.
+    plain: "Only investors meeting wealth/experience rules may buy these unregistered, riskier investments."
+    meaning: "The 'permission' is really a warning that normal safeguards don't apply."
+
+  - id: set_off
+    term: "set-off"
+    category: finance
+    domains: [finance, saas]
+    variants: ["setoff", "right of setoff", "netting", "offset against", "right to offset"]
+    risk: medium
+    short: "they can keep your money to cover a debt"
+    definition: >-
+      Lets a party take money you owe them out of money they owe you — e.g.,
+      a bank sweeping your deposit to cover a loan shortfall.
+    plain: "{OBJ} can keep money otherwise owed to {SUBJ} and use it to cover {SUBJ}'s debts."
+    meaning: "Your cash can vanish into a debt you didn't know was being covered."
+
+  - id: change_of_control
+    term: "change of control"
+    category: finance
+    domains: [finance, saas]
+    variants: ["change of control", "change in ownership", "merger", "acquisition", "sale of substantially all"]
+    risk: high
+    short: "new bosses = new terms possible"
+    definition: >-
+      Triggers tied to mergers, acquisitions, or ownership shifts. They can
+      let the other side terminate, renegotiate, or demand payment when the
+      company changes hands.
+    plain: "If the company is sold or merged, {OBJ} can trigger special rights (terminate, renegotiate, or get paid)."
+    meaning: "Ownership changes can ripple into your contracts — check trigger words."
+
+  - id: escrow
+    term: "escrow"
+    category: finance
+    domains: [finance, realestate]
+    variants: ["in escrow", "escrow agent", "escrow account", "escrowed"]
+    risk: medium
+    short: "money held by a neutral third party"
+    definition: >-
+      Funds (or documents) held by an independent agent until specific
+      conditions are met. It protects both sides — but release conditions
+      are where the leverage hides.
+    plain: "Money sits with a neutral third party until specific conditions are met."
+    meaning: "Read the release conditions — they decide who really controls the cash."
+
+  - id: amortization
+    term: "amortization"
+    category: finance
+    domains: [finance, realestate]
+    variants: ["amortize", "amortized", "amortization schedule", "principal and interest"]
+    risk: medium
+    short: "how your loan gets paid off over time"
+    definition: >-
+      The schedule for paying a loan in equal installments covering principal
+      plus interest. Early payments are mostly interest; late ones are mostly
+      principal.
+    plain: "Equal payments slowly pay off the loan — early on, most goes to interest."
+    meaning: "Selling early means you've built little equity; check the schedule."
+  # ---------------- Healthcare Specifics ----------------
+  - id: hipaa
+    term: "HIPAA"
+    category: healthcare
+    domains: [healthcare]
+    variants: ["hipaa", "health insurance portability"]
+    risk: medium
+    short: "the federal medical-privacy law"
+    definition: >-
+      The law governing who may see and receive your health information, and
+      the paperwork (Notice of Privacy Practices) that explains it. Signing
+      forms often includes HIPAA authorization.
+    plain: "This is about the federal rules protecting your medical privacy."
+    meaning: "The scope of who gets your health data is usually set here."
+
+  - id: phi
+    term: "protected health information"
+    category: healthcare
+    domains: [healthcare]
+    variants: ["phi", "health information", "medical records", "clinical information"]
+    risk: high
+    short: "your medical data"
+    definition: >-
+      Any health info tied to your identity — diagnoses, treatments, bills,
+      test results. It gets special legal protection under HIPAA.
+    plain: "Your medical information that can be traced back to you (diagnoses, treatments, bills)."
+    meaning: "Once it's PHI, strict rules control sharing — but breaches still happen."
+
+  - id: covered_entity
+    term: "covered entity"
+    category: healthcare
+    domains: [healthcare]
+    variants: ["covered entities", "health plan", "healthcare provider", "clearinghouse"]
+    risk: medium
+    short: "who HIPAA binds"
+    definition: >-
+      The organizations HIPAA directly regulates: providers, health plans, and
+      clearinghouses. Vendors that handle data for them become "business
+      associates" with their own duties.
+    plain: "The organizations that HIPAA directly applies to (doctors, insurers, billing services)."
+    meaning: "If your vendor isn't in this chain, different (weaker) rules may apply."
+
+  - id: informed_consent
+    term: "informed consent"
+    category: healthcare
+    domains: [healthcare]
+    variants: ["consent to treatment", "consent form", "informed consent form", "authorization for treatment"]
+    risk: high
+    short: "agreeing after being told the risks"
+    definition: >-
+      Your agreement to treatment after being told the risks, benefits, and
+      alternatives. Signed forms often include broad authorizations and
+      liability releases bundled together.
+    plain: "{SUBJ} agrees to treatment after being told the risks, benefits, and alternatives."
+    meaning: "Check whether the form also releases the provider from liability."
+
+  - id: medical_necessity
+    term: "medical necessity"
+    category: healthcare
+    domains: [healthcare]
+    variants: ["medically necessary", "necessity of care", "experimental or investigational"]
+    risk: high
+    short: "insurance pays only if they approve"
+    definition: >-
+      The standard insurers use to decide whether to cover a treatment. If
+      they deem it "not medically necessary" (or experimental), you may owe
+      the full bill.
+    plain: "Insurance only pays for treatments the insurer decides are necessary — otherwise you may owe the bill."
+    meaning: "Approval is the insurer's judgment call, not your doctor's."
+
+  - id: adverse_event
+    term: "adverse event"
+    category: healthcare
+    domains: [healthcare]
+    variants: ["adverse reaction", "side effects", "complication", "serious adverse event"]
+    risk: high
+    short: "something went wrong medically"
+    definition: >-
+      Any unwanted medical problem during treatment, whether or not the
+      treatment caused it. Consent forms often make you acknowledge these
+      risks in advance.
+    plain: "An unwanted medical problem that happens during treatment — the form makes you accept these risks in advance."
+    meaning: "Acknowledging risk in a form can make it harder to sue later."
+
+  - id: standard_of_care
+    term: "standard of care"
+    category: healthcare
+    domains: [healthcare]
+    variants: ["standard of care", "duty of care", "professional standard", "ordinary care"]
+    risk: medium
+    short: "the level of care doctors must meet"
+    definition: >-
+      The minimum acceptable care a competent professional would provide.
+      Falling below it is "negligence"; contracts sometimes try to raise or
+      limit this baseline.
+    plain: "The minimum acceptable level of care a competent professional would provide."
+    meaning: "Deviating below this is what malpractice claims are built on."
+  # ---------------- Real Estate Specifics ----------------
+  - id: quiet_enjoyment
+    term: "quiet enjoyment"
+    category: realestate
+    domains: [realestate]
+    variants: ["quiet enjoyment of the premises", "covenant of quiet enjoyment"]
+    risk: medium
+    short: "your right to actually use the place"
+    definition: >-
+      Your right to use the property without interference from the landlord
+      or anyone claiming higher rights. If the landlord blocks your use, this
+      right is breached.
+    plain: "{SUBJ} has the right to use the place without the landlord interfering."
+    meaning: "It's the core promise that you'll actually get to live or work there."
+
+  - id: estoppel_certificate
+    term: "estoppel certificate"
+    category: realestate
+    domains: [realestate]
+    variants: ["estoppel", "tenant estoppel", "certification of tenant"]
+    risk: medium
+    short: "swear your lease facts are true"
+    definition: >-
+      A form tenants must sign (often during a sale) confirming rent amount,
+      lease dates, and whether the landlord is in breach. Lies here can hurt
+      you later — read every line.
+    plain: "{SUBJ} signs a statement confirming their lease facts are accurate."
+    meaning: "What you certify here can be used against you later — verify everything."
+
+  - id: easement
+    term: "easement"
+    category: realestate
+    domains: [realestate]
+    variants: ["easements", "right of way", "access easement", "utility easement"]
+    risk: medium
+    short: "someone else's right to use your land"
+    definition: >-
+      A legal right for others to use part of your property — for a road,
+      power lines, or neighbors' access — without owning it.
+    plain: "Other people have a legal right to use part of this land (for roads, utilities, access)."
+    meaning: "Easements travel with the land — they survive the sale."
+
+  - id: lien
+    term: "lien"
+    category: realestate
+    domains: [realestate, finance]
+    variants: ["liens", "mechanic's lien", "tax lien", "lien on the property"]
+    risk: high
+    short: "a legal claim against your property"
+    definition: >-
+      A legal claim on your property to secure a debt (unpaid taxes, repairs,
+      mortgages). The property generally can't be sold until the lien is paid.
+    plain: "Someone has a legal claim on this property until a debt is paid."
+    meaning: "Liens can force sales and block refinancing — always check for them."
+
+  - id: encumbrance
+    term: "encumbrance"
+    category: realestate
+    domains: [realestate]
+    variants: ["encumbrances", "encumbered", "burdens on title", "title encumbrance"]
+    risk: high
+    short: "anything clouding your ownership"
+    definition: >-
+      Any claim, lien, easement, or restriction that limits clean ownership.
+      Sellers usually promise the property is free of them — check closely.
+    plain: "Any claim, restriction, or debt attached to the property that limits full ownership."
+    meaning: "Undisclosed encumbrances are a classic post-closing nightmare."
+  - id: habitability
+    term: "warranty of habitability"
+    category: realestate
+    domains: [realestate]
+    variants: ["habitability", "fit for habitation", "habitable", "warranty of habitability"]
+    risk: high
+    short: "the place must be livable"
+    definition: >-
+      An implied promise that rental housing meets basic livable standards —
+      heat, water, structural safety, working locks. Some leases try to waive
+      it (often unenforceably).
+    plain: "The landlord promises the place meets basic livable standards (heat, water, safety)."
+    meaning: "If the place is unlivable, you may have repair or rent-withholding rights."
+
+  - id: holdover_tenant
+    term: "holdover tenant"
+    category: realestate
+    domains: [realestate]
+    variants: ["holdover", "holdover tenancy", "holdover rent", "holdover period"]
+    risk: high
+    short: "staying past your lease = penalty rent"
+    definition: >-
+      Staying in a rental after the lease ends without a new agreement. Land
+      lords often charge premium "holdover" rent — sometimes double — and can
+      treat it as an automatic new term.
+    plain: "Staying after the lease ends can trigger penalty rent — sometimes double the normal amount."
+    meaning: "Moving out or renewing before the end date is almost always cheaper."
+
+  - id: security_deposit
+    term: "security deposit"
+    category: realestate
+    domains: [realestate]
+    variants: ["security deposit", "damage deposit", "last month's rent", "prepaid rent"]
+    risk: medium
+    short: "money held against damage"
+    definition: >-
+      Upfront money the landlord holds to cover unpaid rent or damage beyond
+      normal wear. State law limits amounts and sets deadlines for return.
+    plain: "Money held in advance to cover damage or unpaid rent — state law limits how much and for how long."
+    meaning: "Document the unit's condition at move-in to get your deposit back."
+
+  - id: sublease
+    term: "sublease"
+    category: realestate
+    domains: [realestate, saas]
+    variants: ["sublet", "subletting", "sublease agreement", "subcontract"]
+    risk: medium
+    short: "renting it out to someone else"
+    definition: >-
+      Lending your contractual rights (or part of the property) to someone
+      else while you remain on the hook. Many contracts require written
+      permission first.
+    plain: "{SUBJ} can pass their rights (or part of the place) to someone else — but often needs permission first."
+    meaning: "You usually stay responsible even after you sublet."
+
+  - id: deed
+    term: "deed"
+    category: realestate
+    domains: [realestate]
+    variants: ["deeds", "warranty deed", "quitclaim deed", "grant deed"]
+    risk: medium
+    short: "the document that transfers ownership"
+    definition: >-
+      The signed document that actually transfers property ownership. The
+      TYPE of deed matters: a "warranty deed" promises clean title; a
+      "quitclaim deed" promises almost nothing.
+    plain: "The paper that transfers ownership — what protections it gives depends on the type of deed."
+    meaning: "Never accept a quitclaim deed without understanding it offers no title guarantees."
