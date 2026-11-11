@@ -1,35 +1,33 @@
 # Plain-English-Legalese-Translator
 
-A tool for translating legal language into clearer, plain English.
+A simple Python project for learning how to make text easier to read.
 
-## Overview
-This project provides utilities for translating complex legal language into clear, plain English. It helps make legal documents more accessible to non-experts.
+## What It Does
+This project helps you turn complex sentences into simpler English.
 
-## Features
-- Legal document simplification
-- Plain English translation
-- Text processing utilities
-- Configurable transformation rules
-
-## Installation
+## Basic Example
 ```python
-pip install -r requirements.txt
+# Simple transformation
+from translator import TextSimplifier
+simplifier = TextSimplifier()
+result = simplifier.simplify("The aforementioned vehicle operates efficiently")
+print(result)  # Output: The car runs well
 ```
 
-## Usage
-```python
-from legal_translator import LegalTranslator
-translator = LegalTranslator()
-plain_text = translator.translate(legal_text)
-```
+## How It Works
+1. Take complex text
+2. Find simpler ways to say it
+3. Output the simpler version
 
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Learn More
+- Search online for "Python text simplification"
+- Try different sentences
+- See how the wording changes
 
-## Topics
-- legal-documents
-- legal-tech
-- plain-language
-- text-processing
-- translator
-```
+## Concepts
+- Text processing
+- Simple replacements
+- Reading and writing strings
+
+## Author
+Educational project
